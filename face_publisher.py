@@ -33,10 +33,14 @@ bucket_name = "msmith-tracking-image-bucket"
 
 # Say Cheese
 def say_cheese():
-    filename = time.strftime("%Y%m%d-%H%M%S",time.gmtime())
+    current_secs = time.time()
+    milliseconds = int(round(current_secs * 1000))
+    filename = time.strftime("%Y%m%d-%H%M%S",time.gmtime(milliseconds / 1000))
     imagefile = "{pics_dir}/{filename}.jpg".format(filename=filename, pics_dir=pics_dir)
 	camera.capture(imagefile)
-    return facedetector.detect(pics_dir,filename)
+    detect_dict = facedetector.detect(pics_dir,filename)
+    detect_dict['timestamp'] = str(milliseconds)
+    return detect_dict
 
 # Usage
 usageInfo = """Usage:
@@ -49,6 +53,8 @@ Type "python face_publisher.py -h" for available options.
 # Help info
 helpInfo = """-i, --interval
 	Seconds to wait between taking pictures
+    -l, --location
+    	"1" or "2", depending on which Pi is the origin
 -h, --help
 	Help information
 """
@@ -56,13 +62,14 @@ helpInfo = """-i, --interval
 # Read in command-line parameters
 useWebsocket = False
 interval=1
+location=0
 topic="facedetection1"
 host = "a5026ozfxej17.iot.us-east-1.amazonaws.com"
 rootCAPath = "/home/pi/security/root_ca.key"
 certificatePath = "/home/pi/security/667_cert.pem"
 privateKeyPath = "/home/pi/security/667_private_key.pem"
 try:
-	opts, args = getopt.getopt(sys.argv[1:], "hi:", ["help", "interval="])
+	opts, args = getopt.getopt(sys.argv[1:], "hi:l:", ["help", "interval=", "location="])
 	# if len(opts) == 0:
 	# 	raise getopt.GetoptError("No input parameters!")
 	for opt, arg in opts:
@@ -71,6 +78,8 @@ try:
 			exit(0)
 		if opt in ("-i", "--interval"):
 			interval = float(arg)
+        if opt in ("-l", "--location"):
+			location = arg
 except getopt.GetoptError:
 	print(usageInfo)
 	exit(1)
@@ -89,6 +98,7 @@ while True:
     detection_response = say_cheese()
     if detection_response['success']:
         detection_response['success'] = 'true'
+        detection_response['location'] = str(location)
         imagefile = "{pics_dir}/{filename}.jpg".format(filename=detection_response['filename'], pics_dir=pics_dir)
         imagedata = open(imagefile, 'rb')
         s3.Bucket(bucket_name).put_object(Key=detection_response['filename'], Body=imagedata, Metadata=detection_response)
