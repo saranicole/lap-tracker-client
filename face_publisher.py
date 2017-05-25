@@ -37,7 +37,7 @@ def say_cheese():
     milliseconds = int(round(current_secs * 1000))
     filename = time.strftime("%Y%m%d-%H%M%S",time.gmtime(milliseconds / 1000))
     imagefile = "{pics_dir}/{filename}.jpg".format(filename=filename, pics_dir=pics_dir)
-	camera.capture(imagefile)
+    camera.capture(imagefile)
     detect_dict = facedetector.detect(pics_dir,filename)
     detect_dict['timestamp'] = str(milliseconds)
     return detect_dict
