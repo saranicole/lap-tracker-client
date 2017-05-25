@@ -46,7 +46,7 @@ def say_cheese():
 usageInfo = """Usage:
 
 Start face detection:
-python face_publisher.py -i <seconds to wait between taking pictures>
+python face_publisher.py -i <seconds to wait between taking pictures> -l <1 or 2 for which pi>
 
 Type "python face_publisher.py -h" for available options.
 """
