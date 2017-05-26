@@ -18,6 +18,7 @@
 from faceometer import FaceDetector
 from datetime import datetime
 import picamera
+import random
 import json
 import sys
 import logging
@@ -28,6 +29,7 @@ import boto3
 camera = picamera.PiCamera()
 facedetector = FaceDetector()
 pics_dir = "/home/pi/laptracker/pics"
+# boto3.set_stream_logger(name='botocore')
 s3 = boto3.resource('s3')
 bucket_name = "msmith-tracking-image-bucket"
 
@@ -62,7 +64,7 @@ helpInfo = """-i, --interval
 # Read in command-line parameters
 useWebsocket = False
 interval=1
-location=0
+location=random.choice('ab')
 topic="facedetection1"
 host = "a5026ozfxej17.iot.us-east-1.amazonaws.com"
 rootCAPath = "/home/pi/security/root_ca.key"
@@ -98,7 +100,7 @@ while True:
     detection_response = say_cheese()
     if detection_response['success']:
         detection_response['success'] = 'true'
-        detection_response['location'] = str(location)
+        detection_response['location'] = location
         imagefile = "{pics_dir}/{filename}.jpg".format(filename=detection_response['filename'], pics_dir=pics_dir)
         imagedata = open(imagefile, 'rb')
         s3.Bucket(bucket_name).put_object(Key=detection_response['filename'], Body=imagedata, Metadata=detection_response)

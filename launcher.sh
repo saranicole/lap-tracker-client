@@ -11,6 +11,6 @@ fi
 fi
 echo $$ > $pidfile
 cd /home/pi/laptracker/lap-tracker-client
-sudo -b python face_publisher.py -l $1
+sudo -b python face_publisher.py
 cd /
 rm $pidfile
